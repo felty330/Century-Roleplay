@@ -1,0 +1,9 @@
+# logs
+.logs/
+*.log
+*.txt
+
+#others
+gamemodes/*.amx
+*.tar
+*.zip*.tar
