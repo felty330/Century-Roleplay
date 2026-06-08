@@ -1,10 +1,48 @@
+CMD:restart(playerid, params[])
+{
+	if(!Guard(playerid, GUARD_ADMIN_DUTY, 6))
+		return 1;
+
+	if(g_ServerRestarting)
+		return SendError(playerid, "Restart sudah dijadwalkan.");
+
+	g_ServerRestarting = true;
+
+	SaveAllCharacters();
+
+	SendClientMessageToAll(COLOR_YELLOW, "[SERVER] Server akan restar dalam 5 detik. Data sedang disimpan.");
+	ServerRestartTime(10);
+	return 1;
+}
+
+CMD:aduty(playerid, params[])
+{
+	if(!Guard(playerid, GUARD_ADMIN, 1))
+		return 1;
+
+	PlayerData[playerid][pAdminDuty] = !PlayerData[playerid][pAdminDuty];
+
+	if(PlayerData[playerid][pAdminDuty])
+	{
+		SetPlayerColor(playerid, 0xFF5555FF);
+		SetPlayerHealth(playerid, 100.0);
+		SetPlayerArmour(playerid, 100.0);
+
+		SendServer(playerid, "Sekarang kamu on duty.");
+	}
+	else {
+		SetPlayerColor(playerid, 0xFFFFFFFF);
+		SetPlayerArmour(playerid, 0.0);
+
+		SendServer(playerid, "Sekarang kamu off duty");
+	}
+	return 1;
+}
+
 CMD:a(playerid, params[])
 {
-	if(!PlayerData[playerid][isLogin] || PlayerData[playerid][pID] < 1)
-		return SendError(playerid, "Kamu harus login dan memilih character terlebih dahulu!");
-
-	if(PlayerData[playerid][pAdmin] < 1)
-		return PermissionError(playerid);
+	if(!Guard(playerid, GUARD_ADMIN, 1))
+		return 1;
 
 	if(isnull(params))
 		return SendSyntax(playerid, "/a <text>");
@@ -56,20 +94,19 @@ CMD:a(playerid, params[])
 
 CMD:setadminlevel(playerid, params[])
 {
-	if(!PlayerData[playerid][isLogin] || PlayerData[playerid][pID] < 1)
-		return SendError(playerid, "Kamu harus login dan memilih character terlebih dahulu!");
-	if(PlayerData[playerid][pAdmin] < 6)
-		return SendError(playerid, "Kamu tidak ada izin untuk menggunakan perintah ini!.");
+	if(!Guard(playerid, GUARD_ADMIN_DUTY, 6))
+    	return 1;
 
 	new level, otherid;
 	if(sscanf(params, "ud", otherid, level))
 		return SendSyntax(playerid, "/setadminlevel <playerid/name> <level 0 - 6>");
 
 	if(!IsPlayerConnected(otherid))
-		return SendError(playerid, "Player tidak ada di kota/offline");
+		return SendError(playerid, "Player tidak online.");
 
 	if(!PlayerData[otherid][isLogin] || PlayerData[otherid][pID] < 1)
-		return SendError(playerid, "Player tersebut belum masuk kota.");
+		return SendError(playerid, "Player tersebut belum login.");
+
 
 	if(level < 0 || level > 6)
 		return SendError(playerid, "Level admin hanya 0 sampai 6");
@@ -83,19 +120,16 @@ CMD:setadminlevel(playerid, params[])
 	);
 	mysql_tquery(c_SQL, query);
 
-	SendServer(playerid, "Kamu mengubah level admin %s menjadi %d.", PlayerData[otherid][pUCP], otherid, level);
+	SendServer(playerid, "Kamu mengubah level admin %s menjadi %d.", PlayerData[otherid][pCharName], level);
 
-	SendServer(otherid, "%s mengubah level admin kamu menjadi %d.", PlayerData[otherid][pUCP], playerid, level);
+	SendServer(otherid, "%s mengubah level admin kamu menjadi %d.", PlayerData[otherid][pCharName], level);
 	return 1;
 }
 
 CMD:goto(playerid, params[])
 {
-	if(!PlayerData[playerid][isLogin] || PlayerData[playerid][pID] < 1)
-		return SendError(playerid, "Kamu harus login terlebih dahulu.");
-
-	if(PlayerData[playerid][pAdmin] < 1)
-		return PermissionError(playerid);
+	if(!Guard(playerid, GUARD_ADMIN_DUTY, 1))
+		return 1;
 
 	new otherid;
 
@@ -106,7 +140,7 @@ CMD:goto(playerid, params[])
 		return SendError(playerid, "Player tidak online.");
 
 	if(!PlayerData[otherid][isLogin] || PlayerData[otherid][pID] < 1)
-		return SendError(otherid, "Player tersebut belum login.");
+		return SendError(playerid, "Player tersebut belum login.");
 
 	new Float:x, Float:y, Float:z;
 	GetPlayerPos(otherid, x, y, z);
@@ -121,11 +155,8 @@ CMD:goto(playerid, params[])
 
 CMD:gethere(playerid, params[])
 {
-	if(!PlayerData[playerid][isLogin] || PlayerData[playerid][pID] < 1)
-		return SendError(playerid, "Kamu harus login terlebih dahulu.");
-
-	if(PlayerData[playerid][pAdmin] < 2)
-		return PermissionError(playerid);
+	if(!Guard(playerid, GUARD_ADMIN_DUTY, 2))
+		return 1;
 
 	new otherid;
 
@@ -133,10 +164,10 @@ CMD:gethere(playerid, params[])
 		return SendSyntax(playerid, "/gethere <playerid/nama>");
 
 	if(!IsPlayerConnected(otherid))
-		return SendError(playerid, "Player tidak ada di kota/offline");
+		return SendError(playerid, "Player tidak online.");
 
 	if(!PlayerData[otherid][isLogin] || PlayerData[otherid][pID] < 1)
-		return SendError(otherid, "Player tersebut belum login.");
+		return SendError(playerid, "Player tersebut belum login.");
 
 	if(otherid == playerid)
 		return SendError(playerid, "Tidak bisa menarik diri sendiri!");
@@ -155,11 +186,8 @@ CMD:gethere(playerid, params[])
 
 CMD:setskin(playerid, params[])
 {
-	if(!PlayerData[playerid][isLogin] || PlayerData[playerid][pID] < 1)
-		return SendError(playerid, "Kamu harus login terlebih dahulu.");
-
-	if(PlayerData[playerid][pAdmin] < 3)
-		return PermissionError(playerid);
+	if(!Guard(playerid, GUARD_ADMIN_DUTY, 3))
+		return 1;
 
 	new otherid, skinid;
 
@@ -176,7 +204,7 @@ CMD:setskin(playerid, params[])
 		return SendError(playerid, "Skin ID tidak valid!.");
 
 	PlayerData[otherid][pSkin] = skinid;
-	SetPlayerSkin(playerid, skinid);
+	SetPlayerSkin(otherid, skinid);
 
 	SendServer(playerid, "Kamu mengubah skin %s menjadi %d", PlayerData[otherid][pCharName], skinid);
 	SendServer(otherid, "%s mengubah skin kamu menjadi %d", PlayerData[playerid][pCharName], skinid);
@@ -185,11 +213,8 @@ CMD:setskin(playerid, params[])
 
 CMD:setmoney(playerid, params[])
 {
-	if(!PlayerData[playerid][isLogin] || PlayerData[playerid][pID] < 1)
-		return SendError(playerid, "Kamu harus login terlebih dahulu.");
-
-	if(PlayerData[playerid][pAdmin] < 5)
-		return PermissionError(playerid);
+	if(!Guard(playerid, GUARD_ADMIN_DUTY, 5))
+		return 1;
 	
 	new otherid, amount;
 
@@ -210,11 +235,8 @@ CMD:setmoney(playerid, params[])
 
 CMD:revive(playerid, params[])
 {
-	if(!PlayerData[playerid][isLogin] || PlayerData[playerid][pID] < 1)
-		return SendError(playerid, "Kamu harus login terlebih dahulu.");
-
-	if(PlayerData[playerid][pAdmin] < 2)
-		return PermissionError(playerid);
+	if(!Guard(playerid, GUARD_ADMIN_DUTY, 2))
+		return 1;
 
 	new otherid;
 
@@ -235,11 +257,8 @@ CMD:revive(playerid, params[])
 
 CMD:freeze(playerid, params[])
 {
-	if(!PlayerData[playerid][isLogin] || PlayerData[playerid][pID] < 1)
-		return SendError(playerid, "Kamu harus login terlebih dahulu.");
-
-	if(PlayerData[playerid][pAdmin] < 2)
-		return PermissionError(playerid);
+	if(!Guard(playerid, GUARD_ADMIN_DUTY, 2))
+		return 1;
 
 	new otherid;
 
@@ -260,11 +279,8 @@ CMD:freeze(playerid, params[])
 
 CMD:unfreeze(playerid, params[])
 {
-	if(!PlayerData[playerid][isLogin] || PlayerData[playerid][pID] < 1)
-		return SendError(playerid, "Kamu harus login terlebih dahulu.");
-
-	if(PlayerData[playerid][pAdmin] < 2)
-		return PermissionError(playerid);
+	if(!Guard(playerid, GUARD_ADMIN_DUTY, 2))
+		return 1;
 
 	new otherid;
 
@@ -285,11 +301,8 @@ CMD:unfreeze(playerid, params[])
 
 CMD:slap(playerid, params[])
 {
-	if(!PlayerData[playerid][isLogin] || PlayerData[playerid][pID] < 1)
-		return SendError(playerid, "Kamu harus login terlebih dahulu.");
-
-	if(PlayerData[playerid][pAdmin] < 2)
-		return PermissionError(playerid);
+	if(!Guard(playerid, GUARD_ADMIN_DUTY, 2))
+		return 1;
 
 	new otherid;
 
@@ -312,12 +325,9 @@ CMD:slap(playerid, params[])
 
 CMD:kick(playerid, params[])
 {
-	if(!PlayerData[playerid][isLogin] || PlayerData[playerid][pID] < 1)
-		return SendError(playerid, "Kamu harus login terlebih dahulu.");
-
-	if(PlayerData[playerid][pAdmin] < 2)
-		return PermissionError(playerid);
-
+	if(!Guard(playerid, GUARD_ADMIN_DUTY, 2))
+		return 1;
+	
 	new otherid, reason[64];
 
 	if(sscanf(params, "u", otherid, reason))

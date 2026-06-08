@@ -142,7 +142,7 @@ FUNC:OnUsernameChecked(playerid, const name[], race_check)
         return ShowCreateCharacterDialog(playerid, true, "Nama character sudah digunakan.");
     }
 
-    format(PlayerData[playerid][pCharName], MAX_PLAYER_NAME, "%s", name);
+    format(PlayerData[playerid][pCharName], MAX_PLAYER_NAME + 1, "%s", name);
     PlayerData[playerid][pTempCharName][0] = EOS;
     ShowBirthDateDialog(playerid);
     return 1;
@@ -199,10 +199,18 @@ FUNC:OnInsertCharacter(playerid, race_check)
         return KickEx(playerid);
     }
 
-    SetPlayerName(playerid, PlayerData[playerid][pCharName]);
+    SetTimerEx("ApplyCharacterName", 300, false, "d", playerid);
     
     PlayerData[playerid][isLogin] = true;
     PlayerData[playerid][pCharSetup] = CHAR_NONE;
     CreateSetupCharacter(playerid);
+    return 1;
+}
+
+FUNC:ApplyCharacterName(playerid)
+{
+    if(!IsPlayerConnected(playerid))
+        return 0;
+    SetPlayerName(playerid, PlayerData[playerid][pCharName]);
     return 1;
 }

@@ -1,9 +1,9 @@
 #include <open.mp>
+#include <sscanf2>
 #include <a_mysql>
 #include <samp_bcrypt>
 #include <easyDialog>
 #include <streamer>
-#include <sscanf2>
 #include <Pawn.CMD>
 #include <YSI_Data\y_iterate>
 
@@ -37,7 +37,7 @@ public OnPlayerConnect(playerid) {
 	//Validate
 	GetPlayerName(playerid, PlayerData[playerid][pUCP], MAX_PLAYER_NAME);
 	if(!CheckPlayerUCPName(playerid))
-		return 0;
+		return KickEx(playerid);
 
 	if(IsPlayerUsingOfficialClient(playerid)) {
 		PlayerData[playerid][isOfficialClient] = true;
@@ -54,18 +54,8 @@ public OnPlayerConnect(playerid) {
 
 public OnPlayerDisconnect(playerid, reason) {
 	g_MysqlRaceCheck[playerid]++;
-	GetPlayerPos(playerid,
-		PlayerData[playerid][pPos][0],
-		PlayerData[playerid][pPos][1],
-		PlayerData[playerid][pPos][2]
-	);
-	GetPlayerFacingAngle(playerid, PlayerData[playerid][pPos][3]);
 
-	PlayerData[playerid][pInterior] = GetPlayerInterior(playerid);
-	PlayerData[playerid][pVirtualWorld] = GetPlayerVirtualWorld(playerid);
-	PlayerData[playerid][pLastExit] = gettime();
-
-	UpdateDataChars(playerid);
+	SavePlayerForExit(playerid);
 	ResetVariables(playerid);
 	return 1;
 } 
@@ -76,16 +66,16 @@ public OnPlayerRequestClass(playerid, classid)
 }
 
 public OnPlayerSpawn(playerid) {
-	if(!IsPlayerConnected(playerid)) {
-		TogglePlayerControllable(playerid, true);
-		return 0;
+	if(!GuardSilent(playerid, GUARD_CHARACTER))
+	{
+		Kick(playerid);
+		return 1;
 	}
-
-
 	SetPlayerInterior(playerid, PlayerData[playerid][pInterior]);
 	SetPlayerVirtualWorld(playerid, PlayerData[playerid][pVirtualWorld]);
 	SetPlayerSkin(playerid, PlayerData[playerid][pSkin]);
 	SetPlayerScore(playerid, PlayerData[playerid][pLevel]);
+	SetPlayerMoneyEx(playerid, PlayerData[playerid][pMoney]);
 	return 1;
 }
 
@@ -102,21 +92,14 @@ public OnPlayerRequestSpawn(playerid)
 		return 0;
 	}
 
-	if(!PlayerData[playerid][isLogin])
+	if(!Guard(playerid, GUARD_CHARACTER))
 		return 0;
-
-	if(PlayerData[playerid][pID] < 1) {
-		SendError(playerid, "Kamu belum memilih karakter!.");
-		return 0;
-	}
 	return 1;
 }
 
 public OnPlayerText(playerid, text[])
 {	
-	if(!IsPlayerConnected(playerid))
-		return 0;
-	if(!PlayerData[playerid][isLogin] || PlayerData[playerid][pID] < 1)
+	if(!GuardSilent(playerid, GUARD_CHARACTER))
 		return 0;
 	if(isnull(text)) return 0;
 	new msg[256];

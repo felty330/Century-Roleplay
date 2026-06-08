@@ -35,6 +35,7 @@ ResetVariables(playerid)
     PlayerData[playerid][pUCP][0] = EOS;
     PlayerData[playerid][pPassword][0] = EOS;
     PlayerData[playerid][pAdmin] = 0;
+    PlayerData[playerid][pAdminDuty] = false;
 
     PlayerData[playerid][pCharacter] = -1;
     PlayerData[playerid][pCharName][0] = EOS;
@@ -80,8 +81,7 @@ CheckPlayerUCPName(playerid) {
     }
     return 1;
 }
-
-/*stock GetAdminRank(playerid)
+stock GetAdminRank(playerid)
 {
     new level[32];
 
@@ -96,4 +96,4 @@ CheckPlayerUCPName(playerid) {
         default: level = "Player";
     }
     return level;
-}*/
+}

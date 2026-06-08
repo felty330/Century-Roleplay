@@ -173,7 +173,7 @@ stock CheckCharacterName(const name[])
     if(lastNameLength < 3)
         return CHARSNAME_LAST_SHORT;
     if(lastNameLength > 12)
-        return CHARSNAME_LAST_SHORT;
+        return CHARSNAME_LAST_LONG;
 
     return CHARSNAME_PASS;
 }

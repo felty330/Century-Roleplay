@@ -6,6 +6,7 @@ enum E_PLAYER_DATA
 	pUCP[MAX_PLAYER_NAME + 1],
 	pPassword[BCRYPT_HASH_LENGTH],
 	pAdmin,
+	bool:pAdminDuty,
 	pIP[16],
 
 	//Characters
@@ -43,3 +44,6 @@ new PlayerData[MAX_PLAYERS][E_PLAYER_DATA];
 new g_MysqlRaceCheck[MAX_PLAYERS];
 new PlayerCharacter[MAX_PLAYERS][MAX_CHARS][MAX_PLAYER_NAME + 1];
 new g_TickCount[MAX_PLAYERS];
+
+//Restart
+new bool:g_ServerRestarting = false;

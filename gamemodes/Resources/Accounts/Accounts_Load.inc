@@ -90,9 +90,8 @@ FUNC:OnCharacterDataLoaded(playerid, race_check)
     SetPlayerInterior(playerid, PlayerData[playerid][pInterior]);
     SetPlayerVirtualWorld(playerid, PlayerData[playerid][pVirtualWorld]);
     SetPlayerScore(playerid, PlayerData[playerid][pLevel]);
-    SetPlayerName(playerid, PlayerData[playerid][pCharName]);
     SetPlayerMoneyEx(playerid, PlayerData[playerid][pMoney]);
-    
+    SetTimerEx("ApplyCharacterName", 300, false, "d", playerid);
     SetSpawnInfo(playerid, NO_TEAM, PlayerData[playerid][pSkin],
         PlayerData[playerid][pPos][0],
         PlayerData[playerid][pPos][1],
@@ -101,5 +100,6 @@ FUNC:OnCharacterDataLoaded(playerid, race_check)
         WEAPON_FIST, 0, WEAPON_FIST, 0, WEAPON_FIST, 0
     );
     SpawnPlayer(playerid);
+
     return 1;
 }

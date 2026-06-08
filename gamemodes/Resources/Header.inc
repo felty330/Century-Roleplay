@@ -3,3 +3,5 @@
 #include "Accounts\Header"
 
 #include "Dialogs\Header"
+
+#include "Commands\Header"

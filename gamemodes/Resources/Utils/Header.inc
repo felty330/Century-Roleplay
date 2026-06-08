@@ -1,3 +1,3 @@
 #include "Colour"
 #include "Defines"
-#include "Enum"
+#include "Variable"

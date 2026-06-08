@@ -80,7 +80,7 @@ Dialog:DIALOG_CREATE_CHARACTER(playerid, response, listitem, inputtext[])
     if(check != CHARSNAME_PASS)
         return ShowCharacterNameWarning(playerid, check);
 
-    format(PlayerData[playerid][pTempCharName], MAX_PLAYER_NAME, "%s", inputtext);
+    format(PlayerData[playerid][pTempCharName], MAX_PLAYER_NAME + 1, "%s", inputtext);
 
     g_MysqlRaceCheck[playerid]++;
 
